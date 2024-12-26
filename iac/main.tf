@@ -6,6 +6,11 @@ resource "aws_s3_bucket" "eventbridge" {
   bucket = "eventbridge-terraform-test"
 }
 
+resource "aws_s3_bucket_notification" "s3_eventbridge" {
+  bucket      = aws_s3_bucket.eventbridge.bucket
+  eventbridge = true
+}
+
 resource "aws_cloudwatch_event_rule" "s3_createobject" {
   name           = "s3_createobject"
   description    = "Rule to trigger when an object is created in the S3 bucket"
