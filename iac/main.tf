@@ -3,7 +3,7 @@ data "aws_cloudwatch_event_bus" "default" {
 }
 
 resource "aws_s3_bucket" "eventbridge" {
-  bucket = "eventbridge_terraform_test"
+  bucket = "eventbridge-terraform-test"
 }
 
 resource "aws_cloudwatch_event_rule" "s3_createobject" {
