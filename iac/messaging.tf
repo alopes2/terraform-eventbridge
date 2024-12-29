@@ -12,39 +12,38 @@ resource "aws_sns_topic_subscription" "data_sqs_target" {
   endpoint  = aws_sqs_queue.data_queue.arn
 }
 
+resource "aws_sqs_queue_policy" "queue_policy" {
+  queue_url = aws_sqs_queue.data_queue.url
+  policy    = data.aws_iam_policy_document.sqs-queue-policy.json
+}
 
-# resource "aws_sqs_queue_policy" "queue_policy" {
-#   queue_url = aws_sqs_queue.data_queue.url
-#   policy    = data.aws_iam_policy_document.sqs-queue-policy.json
-# }
+data "aws_iam_policy_document" "sqs-queue-policy" {
+  policy_id = "arn:aws:sqs:${var.aws_region}:${var.aws_account_id}:data-queue/SQSDefaultPolicy"
 
-# data "aws_iam_policy_document" "sqs-queue-policy" {
-#   policy_id = "arn:aws:sqs:YOUR_REGION:YOUR_ACCOUNT_ID:data-queue/SQSDefaultPolicy"
+  statement {
+    sid    = "movie_updates-sns-topic"
+    effect = "Allow"
 
-#   statement {
-#     sid    = "movie_updates-sns-topic"
-#     effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["sns.amazonaws.com"]
+    }
 
-#     principals {
-#       type        = "Service"
-#       identifiers = ["sns.amazonaws.com"]
-#     }
+    actions = [
+      "SQS:SendMessage",
+    ]
 
-#     actions = [
-#       "SQS:SendMessage",
-#     ]
+    resources = [
+      "arn:aws:sqs:${var.aws_region}:${var.aws_account_id}:data-queue",
+    ]
 
-#     resources = [
-#       "arn:aws:sqs:YOUR_REGION:YOUR_ACCOUNT_ID:data-queue",
-#     ]
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
 
-#     condition {
-#       test     = "ArnEquals"
-#       variable = "aws:SourceArn"
-
-#       values = [
-#         aws_sns_topic.movie_updates.arn,
-#       ]
-#     }
-#   }
-# }
+      values = [
+        aws_sns_topic.movie_updates.arn,
+      ]
+    }
+  }
+}
