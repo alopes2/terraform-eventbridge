@@ -46,6 +46,10 @@ resource "aws_scheduler_schedule" "better_scheduler" {
       detail_type = "My Scheduler"
       source      = "Custom Scheduler"
     }
+
+    input = jsonencode({
+      Message = "Super Schedule"
+    })
   }
 
   schedule_expression = "cron(* * * * ? *)" // Triggers every minute, could also be rate(1 minute)
