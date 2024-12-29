@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "scheduler_policies" {
 }
 
 resource "aws_iam_role_policy" "scheduler_role_policy" {
-  role   = aws_iam_role.scheduler.arn
+  role   = aws_iam_role.scheduler.name
   policy = data.aws_iam_policy_document.scheduler_policies.json
 }
 
