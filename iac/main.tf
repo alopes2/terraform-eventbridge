@@ -40,9 +40,14 @@ resource "aws_scheduler_schedule" "better_scheduler" {
     mode = "OFF"
   }
   target {
-    arn      = aws_cloudwatch_log_group.eventbridge.arn
+    arn      = data.aws_cloudwatch_event_bus.default.arn
     role_arn = aws_iam_role.scheduler.arn
+    eventbridge_parameters {
+      detail_type = "My Scheduler"
+      source      = "Custom Scheduler"
+    }
   }
+
   schedule_expression = "cron(* * * * ? *)" // Triggers every minute, could also be rate(1 minute)
 }
 
@@ -62,10 +67,10 @@ data "aws_iam_policy_document" "eventbridge_assume_policy" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "eventbridge" {
-  name              = "/aws/events/eventbridge/logs"
-  retention_in_days = 1
-}
+# resource "aws_cloudwatch_log_group" "eventbridge" {
+#   name              = "/aws/events/eventbridge/logs"
+#   retention_in_days = 1
+# }
 
 
 # data "aws_iam_policy_document" "s3_createobject_log_policy" {
