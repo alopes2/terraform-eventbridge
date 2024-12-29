@@ -47,6 +47,7 @@ resource "aws_scheduler_schedule" "better_scheduler" {
       source      = "Custom Scheduler"
     }
 
+    // Event Payload (if required)
     input = jsonencode({
       Message = "Super Schedule"
     })
@@ -69,6 +70,22 @@ data "aws_iam_policy_document" "eventbridge_assume_policy" {
       identifiers = ["scheduler.amazonaws.com"]
     }
   }
+}
+
+data "aws_iam_policy_document" "scheduler_policies" {
+  statement {
+    effect  = "Allow"
+    actions = ["events:PutEvents"]
+
+    resources = [
+      data.aws_cloudwatch_event_bus.default.arn
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "scheduler_role_policy" {
+  role   = aws_iam_role.scheduler.arn
+  policy = data.aws_iam_policy_document.scheduler_policies.json
 }
 
 resource "aws_cloudwatch_event_rule" "better_scheduler_to_cloudwatch" {
