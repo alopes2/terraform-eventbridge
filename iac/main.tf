@@ -71,52 +71,63 @@ data "aws_iam_policy_document" "eventbridge_assume_policy" {
   }
 }
 
-# resource "aws_cloudwatch_log_group" "eventbridge" {
-#   name              = "/aws/events/eventbridge/logs"
-#   retention_in_days = 1
-# }
+resource "aws_cloudwatch_event_rule" "better_scheduler_to_cloudwatch" {
+  name           = "better_scheduler_to_cloudwatch"
+  description    = "Rule to better_scheduler_to_cloudwatch"
+  event_bus_name = data.aws_cloudwatch_event_bus.default.name
 
+  event_pattern = jsonencode({
+    source      = ["Custom Scheduler"],
+    detail-type = ["My Scheduler"],
+  })
+}
 
-# data "aws_iam_policy_document" "s3_createobject_log_policy" {
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "logs:CreateLogStream"
-#     ]
-#     resources = [
-#       "${aws_cloudwatch_log_group.s3_createobject.arn}:*"
-#     ]
-#     principals {
-#       type = "Service"
-#       identifiers = [
-#         "events.amazonaws.com",
-#         "delivery.logs.amazonaws.com"
-#       ]
-#     }
-#   }
+resource "aws_cloudwatch_event_target" "better_scheduler_to_cloudwatch" {
+  arn  = aws_cloudwatch_log_group.eventbridge.arn
+  rule = aws_cloudwatch_event_rule.better_scheduler_to_cloudwatch.name
+}
 
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "logs:PutLogEvents"
-#     ]
+resource "aws_cloudwatch_log_group" "eventbridge" {
+  name              = "/aws/events/eventbridge/logs"
+  retention_in_days = 1
+}
 
-#     resources = [
-#       "${aws_cloudwatch_log_group.s3_createobject.arn}:*:*"
-#     ]
-
-#     principals {
-#       type = "Service"
-#       identifiers = [
-#         "events.amazonaws.com",
-#         "delivery.logs.amazonaws.com"
-#       ]
-#     }
-
-#     condition {
-#       test     = "ArnEquals"
-#       values   = [aws_cloudwatch_event_rule.s3_createobject.arn]
-#       variable = "aws:SourceArn"
-#     }
-#   }
-# }
+data "aws_iam_policy_document" "eventbridge_log_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream"
+    ]
+    resources = [
+      "${aws_cloudwatch_log_group.eventbridge.arn}:*"
+    ]
+    principals {
+      type = "Service"
+      identifiers = [
+        "events.amazonaws.com",
+        "delivery.logs.amazonaws.com"
+      ]
+    }
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:PutLogEvents"
+    ]
+    resources = [
+      "${aws_cloudwatch_log_group.eventbridge.arn}:*:*"
+    ]
+    principals {
+      type = "Service"
+      identifiers = [
+        "events.amazonaws.com",
+        "delivery.logs.amazonaws.com"
+      ]
+    }
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_cloudwatch_event_rule.eventbridge.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
