@@ -31,21 +31,42 @@ resource "aws_cloudwatch_event_rule" "scheduler" {
   name                = "every_minute_test_schulder"
   description         = "Rule to trigger every minute"
   event_bus_name      = data.aws_cloudwatch_event_bus.default.name
-  schedule_expression = "cron(* * * * ? *)" // Triggers every minute
+  schedule_expression = "cron(* * * * ? *)" // Triggers every minute, could also be rate(1 minute)
 }
 
+resource "aws_scheduler_schedule" "better_scheduler" {
+  name = "better_scheduler"
+  flexible_time_window {
+    mode = "OFF"
+  }
+  target {
+    arn      = aws_cloudwatch_log_group.eventbridge.arn
+    role_arn = aws_iam_role.scheduler.arn
+  }
+  schedule_expression = "cron(* * * * ? *)" // Triggers every minute, could also be rate(1 minute)
+}
 
-# resource "aws_cloudwatch_event_target" "scheduler_log" {
-#   rule      = aws_cloudwatch_event_rule.scheduler.name
-#   target_id = "SendSchdulerToCloudWatch"
-#   arn       = aws_cloudwatch_log_group.s3_createobject.arn
-#   input = "I trigger every 1 minute"
-# }
+resource "aws_iam_role" "scheduler" {
+  name               = "scheduler_role"
+  assume_role_policy = data.aws_iam_policy_document.eventbridge_assume_policy.json
+}
 
-# resource "aws_cloudwatch_log_group" "s3_createobject" {
-#   name              = "/aws/events/s3_createobject/logs"
-#   retention_in_days = 1
-# }
+data "aws_iam_policy_document" "eventbridge_assume_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["scheduler.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_group" "eventbridge" {
+  name              = "/aws/events/eventbridge/logs"
+  retention_in_days = 1
+}
+
 
 # data "aws_iam_policy_document" "s3_createobject_log_policy" {
 #   statement {
@@ -53,11 +74,9 @@ resource "aws_cloudwatch_event_rule" "scheduler" {
 #     actions = [
 #       "logs:CreateLogStream"
 #     ]
-
 #     resources = [
 #       "${aws_cloudwatch_log_group.s3_createobject.arn}:*"
 #     ]
-
 #     principals {
 #       type = "Service"
 #       identifiers = [
@@ -66,6 +85,7 @@ resource "aws_cloudwatch_event_rule" "scheduler" {
 #       ]
 #     }
 #   }
+
 #   statement {
 #     effect = "Allow"
 #     actions = [
