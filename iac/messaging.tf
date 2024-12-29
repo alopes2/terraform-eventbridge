@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "sqs-queue-policy" {
   policy_id = "arn:aws:sqs:${var.aws_region}:${var.aws_account_id}:data-queue/SQSDefaultPolicy"
 
   statement {
-    sid    = "movie_updates-sns-topic"
+    sid    = "data-stuff-topic"
     effect = "Allow"
 
     principals {
@@ -42,7 +42,7 @@ data "aws_iam_policy_document" "sqs-queue-policy" {
       variable = "aws:SourceArn"
 
       values = [
-        aws_sns_topic.movie_updates.arn,
+        aws_sns_topic.data.arn,
       ]
     }
   }
