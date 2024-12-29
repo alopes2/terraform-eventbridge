@@ -126,7 +126,7 @@ data "aws_iam_policy_document" "eventbridge_log_policy" {
     }
     condition {
       test     = "ArnEquals"
-      values   = [aws_cloudwatch_event_rule.eventbridge.arn]
+      values   = [aws_cloudwatch_event_rule.better_scheduler_to_cloudwatch.arn]
       variable = "aws:SourceArn"
     }
   }
