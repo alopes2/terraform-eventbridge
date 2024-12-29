@@ -27,58 +27,67 @@ resource "aws_cloudwatch_event_rule" "s3_createobject" {
   })
 }
 
-resource "aws_cloudwatch_event_target" "s3_createobject_log" {
-  rule      = aws_cloudwatch_event_rule.s3_createobject.name
-  target_id = "SendToCloudWatch"
-  arn       = aws_cloudwatch_log_group.s3_createobject.arn
+resource "aws_cloudwatch_event_rule" "scheduler" {
+  name                = "every_minute_test_schulder"
+  description         = "Rule to trigger every minute"
+  event_bus_name      = data.aws_cloudwatch_event_bus.default.name
+  schedule_expression = "* * * * ? *" // Triggers every minute
 }
 
-resource "aws_cloudwatch_log_group" "s3_createobject" {
-  name              = "/aws/events/s3_createobject/logs"
-  retention_in_days = 1
-}
 
-data "aws_iam_policy_document" "s3_createobject_log_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:CreateLogStream"
-    ]
+# resource "aws_cloudwatch_event_target" "scheduler_log" {
+#   rule      = aws_cloudwatch_event_rule.scheduler.name
+#   target_id = "SendSchdulerToCloudWatch"
+#   arn       = aws_cloudwatch_log_group.s3_createobject.arn
+#   input = "I trigger every 1 minute"
+# }
 
-    resources = [
-      "${aws_cloudwatch_log_group.s3_createobject.arn}:*"
-    ]
+# resource "aws_cloudwatch_log_group" "s3_createobject" {
+#   name              = "/aws/events/s3_createobject/logs"
+#   retention_in_days = 1
+# }
 
-    principals {
-      type = "Service"
-      identifiers = [
-        "events.amazonaws.com",
-        "delivery.logs.amazonaws.com"
-      ]
-    }
-  }
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:PutLogEvents"
-    ]
+# data "aws_iam_policy_document" "s3_createobject_log_policy" {
+#   statement {
+#     effect = "Allow"
+#     actions = [
+#       "logs:CreateLogStream"
+#     ]
 
-    resources = [
-      "${aws_cloudwatch_log_group.s3_createobject.arn}:*:*"
-    ]
+#     resources = [
+#       "${aws_cloudwatch_log_group.s3_createobject.arn}:*"
+#     ]
 
-    principals {
-      type = "Service"
-      identifiers = [
-        "events.amazonaws.com",
-        "delivery.logs.amazonaws.com"
-      ]
-    }
+#     principals {
+#       type = "Service"
+#       identifiers = [
+#         "events.amazonaws.com",
+#         "delivery.logs.amazonaws.com"
+#       ]
+#     }
+#   }
+#   statement {
+#     effect = "Allow"
+#     actions = [
+#       "logs:PutLogEvents"
+#     ]
 
-    condition {
-      test     = "ArnEquals"
-      values   = [aws_cloudwatch_event_rule.s3_createobject.arn]
-      variable = "aws:SourceArn"
-    }
-  }
-}
+#     resources = [
+#       "${aws_cloudwatch_log_group.s3_createobject.arn}:*:*"
+#     ]
+
+#     principals {
+#       type = "Service"
+#       identifiers = [
+#         "events.amazonaws.com",
+#         "delivery.logs.amazonaws.com"
+#       ]
+#     }
+
+#     condition {
+#       test     = "ArnEquals"
+#       values   = [aws_cloudwatch_event_rule.s3_createobject.arn]
+#       variable = "aws:SourceArn"
+#     }
+#   }
+# }
