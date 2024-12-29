@@ -27,124 +27,75 @@ resource "aws_cloudwatch_event_rule" "s3_createobject" {
   })
 }
 
-resource "aws_cloudwatch_event_rule" "scheduler" {
-  name                = "every_minute_test_schulder"
-  description         = "Rule to trigger every minute"
-  event_bus_name      = data.aws_cloudwatch_event_bus.default.name
-  schedule_expression = "cron(* * * * ? *)" // Triggers every minute, could also be rate(1 minute)
-}
+# resource "aws_cloudwatch_event_rule" "scheduler" {
+#   name                = "every_minute_test_schulder"
+#   description         = "Rule to trigger every minute"
+#   event_bus_name      = data.aws_cloudwatch_event_bus.default.name
+#   schedule_expression = "cron(* * * * ? *)" // Triggers every minute, could also be rate(1 minute)
+# }
 
-resource "aws_scheduler_schedule" "better_scheduler" {
-  name = "better_scheduler"
-  flexible_time_window {
-    mode = "OFF"
-  }
-  target {
-    arn      = data.aws_cloudwatch_event_bus.default.arn
-    role_arn = aws_iam_role.scheduler.arn
-    eventbridge_parameters {
-      detail_type = "My Scheduler"
-      source      = "Custom Scheduler"
-    }
+# resource "aws_cloudwatch_event_rule" "better_scheduler_to_cloudwatch" {
+#   name           = "better_scheduler_to_cloudwatch"
+#   description    = "Rule to better_scheduler_to_cloudwatch"
+#   event_bus_name = data.aws_cloudwatch_event_bus.default.name
 
-    // Event Payload (if required)
-    input = jsonencode({
-      Message = "Super Schedule"
-    })
-  }
+#   event_pattern = jsonencode({
+#     source      = ["Custom Scheduler"],
+#     detail-type = ["My Scheduler"],
+#   })
+# }
 
-  schedule_expression = "cron(* * * * ? *)" // Triggers every minute, could also be rate(1 minute)
-}
 
-resource "aws_iam_role" "scheduler" {
-  name               = "scheduler_role"
-  assume_role_policy = data.aws_iam_policy_document.eventbridge_assume_policy.json
-}
+# resource "aws_scheduler_schedule" "better_scheduler" {
+#   name = "better_scheduler"
+#   flexible_time_window {
+#     mode = "OFF"
+#   }
+#   target {
+#     arn      = data.aws_cloudwatch_event_bus.default.arn
+#     role_arn = aws_iam_role.better_scheduler.arn
+#     eventbridge_parameters {
+#       detail_type = "My Scheduler"
+#       source      = "Custom Scheduler"
+#     }
 
-data "aws_iam_policy_document" "eventbridge_assume_policy" {
-  statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["scheduler.amazonaws.com"]
-    }
-  }
-}
+#     // Event Payload (if required)
+#     input = jsonencode({
+#       Message = "Super Schedule"
+#     })
+#   }
 
-data "aws_iam_policy_document" "scheduler_policies" {
-  statement {
-    effect  = "Allow"
-    actions = ["events:PutEvents"]
+#   schedule_expression = "cron(* * * * ? *)" // Triggers every minute, could also be rate(1 minute)
+# }
 
-    resources = [
-      data.aws_cloudwatch_event_bus.default.arn
-    ]
-  }
-}
+# resource "aws_iam_role" "better_scheduler" {
+#   name               = "scheduler_role"
+#   assume_role_policy = data.aws_iam_policy_document.eventbridge_assume_policy.json
+# }
 
-resource "aws_iam_role_policy" "scheduler_role_policy" {
-  role   = aws_iam_role.scheduler.name
-  policy = data.aws_iam_policy_document.scheduler_policies.json
-}
+# data "aws_iam_policy_document" "better_scheduler_assume_policy" {
+#   statement {
+#     effect  = "Allow"
+#     actions = ["sts:AssumeRole"]
+#     principals {
+#       type        = "Service"
+#       identifiers = ["scheduler.amazonaws.com"]
+#     }
+#   }
+# }
 
-resource "aws_cloudwatch_event_rule" "better_scheduler_to_cloudwatch" {
-  name           = "better_scheduler_to_cloudwatch"
-  description    = "Rule to better_scheduler_to_cloudwatch"
-  event_bus_name = data.aws_cloudwatch_event_bus.default.name
+# data "aws_iam_policy_document" "better_scheduler_policies" {
+#   statement {
+#     effect  = "Allow"
+#     actions = ["events:PutEvents"]
 
-  event_pattern = jsonencode({
-    source      = ["Custom Scheduler"],
-    detail-type = ["My Scheduler"],
-  })
-}
+#     resources = [
+#       data.aws_cloudwatch_event_bus.default.arn
+#     ]
+#   }
+# }
 
-resource "aws_cloudwatch_event_target" "better_scheduler_to_cloudwatch" {
-  arn  = aws_cloudwatch_log_group.eventbridge.arn
-  rule = aws_cloudwatch_event_rule.better_scheduler_to_cloudwatch.name
-}
-
-resource "aws_cloudwatch_log_group" "eventbridge" {
-  name              = "/aws/events/eventbridge/logs"
-  retention_in_days = 1
-}
-
-data "aws_iam_policy_document" "eventbridge_log_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:CreateLogStream"
-    ]
-    resources = [
-      "${aws_cloudwatch_log_group.eventbridge.arn}:*"
-    ]
-    principals {
-      type = "Service"
-      identifiers = [
-        "events.amazonaws.com",
-        "delivery.logs.amazonaws.com"
-      ]
-    }
-  }
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:PutLogEvents"
-    ]
-    resources = [
-      "${aws_cloudwatch_log_group.eventbridge.arn}:*:*"
-    ]
-    principals {
-      type = "Service"
-      identifiers = [
-        "events.amazonaws.com",
-        "delivery.logs.amazonaws.com"
-      ]
-    }
-    condition {
-      test     = "ArnEquals"
-      values   = [aws_cloudwatch_event_rule.better_scheduler_to_cloudwatch.arn]
-      variable = "aws:SourceArn"
-    }
-  }
-}
+# resource "aws_iam_role_policy" "better_scheduler_role_policy" {
+#   role   = aws_iam_role.better_scheduler.name
+#   policy = data.aws_iam_policy_document.better_scheduler_policies.json
+# }
