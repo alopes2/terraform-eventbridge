@@ -1,4 +1,3 @@
-// Default handler generated in AWS
 exports.handler = async (event) => {
   console.log(event);
   const response = {
