@@ -31,7 +31,7 @@ resource "aws_cloudwatch_event_rule" "scheduler" {
   name                = "every_minute_test_schulder"
   description         = "Rule to trigger every minute"
   event_bus_name      = data.aws_cloudwatch_event_bus.default.name
-  schedule_expression = "* * * * ? *" // Triggers every minute
+  schedule_expression = "cron(* * * * ? *)" // Triggers every minute
 }
 
 
