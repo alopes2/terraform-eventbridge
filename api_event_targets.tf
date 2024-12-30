@@ -38,8 +38,44 @@ resource "aws_cloudwatch_event_api_destination" "api" {
 }
 
 resource "aws_cloudwatch_event_target" "api" {
-  rule = aws_cloudwatch_event_rule.s3_createobject.name
-  arn  = aws_cloudwatch_event_api_destination.api.arn
+  rule     = aws_cloudwatch_event_rule.s3_createobject.name
+  arn      = aws_cloudwatch_event_api_destination.api.arn
+  role_arn = aws_iam_role.iam_for_api_destination.arn
   # If you need custom static input, define here
   # input = jsonencode({})
+}
+
+resource "aws_iam_role" "iam_for_api_destination" {
+  name               = "api-destination-role"
+  assume_role_policy = data.aws_iam_policy_document.api_destination_assume_role.json
+}
+
+resource "aws_iam_role_policy" "policies_api_destination" {
+  role   = aws_iam_role.iam_for_api_destination.name
+  policy = data.aws_iam_policy_document.api_destination_policies.json
+}
+
+data "aws_iam_policy_document" "api_destination_assume_role" {
+
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+
+  }
+}
+
+data "aws_iam_policy_document" "api_destination_policies" {
+  statement {
+    effect = "Allow"
+
+    actions = ["events:InvokeApiDestination"]
+
+    resources = [aws_cloudwatch_event_api_destination.api.arn]
+  }
 }
