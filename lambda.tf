@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_lambda_permission" "eventbridge" {
-  action        = "InvokeFunction"
+  action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda.function_name
   source_arn    = aws_cloudwatch_event_rule.s3_createobject.arn
   principal     = "events.amazonaws.com"
@@ -78,9 +78,9 @@ data "aws_iam_policy_document" "lambda_policies" {
 }
 
 
-resource "aws_lambda_event_source_mapping" "example" {
-  event_source_arn = aws_sqs_queue.data_queue.arn
-  function_name    = aws_lambda_function.lambda.function_name
-}
+# resource "aws_lambda_event_source_mapping" "example" {
+#   event_source_arn = aws_sqs_queue.data_queue.arn
+#   function_name    = aws_lambda_function.lambda.function_name
+# }
 
 
