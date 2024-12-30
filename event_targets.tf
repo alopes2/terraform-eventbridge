@@ -1,6 +1,14 @@
 resource "aws_cloudwatch_event_target" "target" {
   arn  = aws_sqs_queue.data_queue.arn
   rule = aws_cloudwatch_event_rule.s3_createobject.name
+  retry_policy {
+    maximum_event_age_in_seconds = 3600 // 3600 seconds = 1 hour
+    maximum_retry_attempts       = 20
+  }
+
+  dead_letter_config {
+    arn = aws_sqs_queue.dead_letter_queue.arn
+  }
   input_transformer {
     input_paths = {
       bucket    = "$.detail.bucket.name"
@@ -16,6 +24,11 @@ resource "aws_cloudwatch_event_target" "target" {
     }
     EOF
   }
+}
+
+resource "aws_cloudwatch_event_archive" "archive" {
+  name             = "default"
+  event_source_arn = data.aws_cloudwatch_event_bus.default.arn
 }
 
 resource "aws_cloudwatch_event_target" "logs" {
