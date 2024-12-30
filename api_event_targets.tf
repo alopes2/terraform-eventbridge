@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_event_connection" "api" {
-  name               = "Test Connection"
+  name               = "TestConnection"
   authorization_type = "API_KEY"
   auth_parameters {
     api_key {
@@ -31,7 +31,7 @@ resource "aws_cloudwatch_event_connection" "api" {
 }
 
 resource "aws_cloudwatch_event_api_destination" "api" {
-  name                = "Test API Destination"
+  name                = "TestAPIDestination"
   connection_arn      = aws_cloudwatch_event_connection.api.arn
   http_method         = "POST"
   invocation_endpoint = "http://jsonplaceholder.org/posts"
