@@ -13,12 +13,13 @@ resource "aws_cloudwatch_event_target" "logs" {
       action    = "$.detail.reason"
     }
 
-    input_template = jsonencode(
+    input_template = <<EOF
       {
-        bucketName = "<bucket>",
-        objectKey  = "<objectKey>",
-        action     = "<action>"
-    })
+        "bucketName": <bucket>,
+        "objectKey": <objectKey>,
+        "action": <action>
+      }
+    EOF
   }
 }
 
