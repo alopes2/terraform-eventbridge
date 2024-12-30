@@ -1,6 +1,21 @@
 resource "aws_cloudwatch_event_target" "target" {
   arn  = aws_sqs_queue.data_queue.arn
   rule = aws_cloudwatch_event_rule.s3_createobject.name
+  input_transformer {
+    input_paths = {
+      bucket    = "$.detail.bucket.name"
+      objectKey = "$.detail.object.key",
+      action    = "$.detail.reason"
+    }
+
+    input_template = <<EOF
+    {
+      "bucket" : <bucket>,
+      "action": <action>,
+      "key": <objectKey>
+    }
+    EOF
+  }
 }
 
 resource "aws_cloudwatch_event_target" "logs" {
@@ -10,14 +25,12 @@ resource "aws_cloudwatch_event_target" "logs" {
     input_paths = {
       bucket    = "$.detail.bucket.name"
       objectKey = "$.detail.object.key"
-      action    = "$.detail.reason"
     }
 
     input_template = <<EOF
       {
-        "bucketName": <bucket>,
-        "objectKey": <objectKey>,
-        "action": <action>
+        "timestamp" : <timestamp>,
+        "message": "Bucket \"<bucket>\" has a new file added <objectKey>"
       }
     EOF
   }
