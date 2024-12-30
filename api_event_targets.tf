@@ -33,8 +33,8 @@ resource "aws_cloudwatch_event_connection" "api" {
 resource "aws_cloudwatch_event_api_destination" "api" {
   name                = "TestAPIDestination"
   connection_arn      = aws_cloudwatch_event_connection.api.arn
-  http_method         = "POST"
-  invocation_endpoint = "http://jsonplaceholder.org/posts"
+  http_method         = "GET"
+  invocation_endpoint = "https://example.com"
 }
 
 resource "aws_cloudwatch_event_target" "api" {
