@@ -1,5 +1,5 @@
-resource "aws_cloudwatch_event_target" "lambda" {
-  arn  = aws_lambda_function.lambda.arn
+resource "aws_cloudwatch_event_target" "target" {
+  arn  = aws_sqs_queue.data_queue.arn
   rule = aws_cloudwatch_event_rule.s3_createobject.name
 }
 
