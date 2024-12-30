@@ -6,6 +6,20 @@ resource "aws_cloudwatch_event_target" "target" {
 resource "aws_cloudwatch_event_target" "logs" {
   rule = aws_cloudwatch_event_rule.s3_createobject.name
   arn  = aws_cloudwatch_log_group.eventbridge.arn
+  input_transformer {
+    input_paths = {
+      bucket    = "$.detail.bucket.name"
+      objectKey = "$.detail.object.key"
+      action    = "$.detail.reason"
+    }
+
+    input_template = jsonencode(
+      {
+        bucketName = "<bucket>",
+        objectKey  = "<objectKey>",
+        action     = "<action>"
+    })
+  }
 }
 
 resource "aws_cloudwatch_log_group" "eventbridge" {
