@@ -23,6 +23,7 @@ resource "aws_cloudwatch_event_target" "logs" {
   arn  = aws_cloudwatch_log_group.eventbridge.arn
   input_transformer {
     input_paths = {
+      timestamp = "$.time"
       bucket    = "$.detail.bucket.name"
       objectKey = "$.detail.object.key"
     }
