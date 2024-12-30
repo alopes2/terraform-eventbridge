@@ -1,3 +1,8 @@
+resource "aws_cloudwatch_event_target" "lambda" {
+  arn  = aws_lambda_function.lambda.arn
+  rule = aws_cloudwatch_event_rule.s3_createobject.name
+}
+
 # resource "aws_cloudwatch_event_target" "better_scheduler_to_cloudwatch" {
 #   arn  = aws_cloudwatch_log_group.eventbridge.arn
 #   rule = aws_cloudwatch_event_rule.better_scheduler_to_cloudwatch.name

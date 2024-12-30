@@ -4,7 +4,7 @@ locals {
 
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "../apps/index.js"
+  source_file = "./index.js"
   output_path = "${local.function_name}_lambda_function_payload.zip"
 }
 
@@ -42,6 +42,13 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
+resource "aws_lambda_permission" "eventbridge" {
+  action        = "InvokeFunction"
+  function_name = aws_lambda_function.lambda.function_name
+  source_arn    = aws_cloudwatch_event_rule.s3_createobject.arn
+  principal     = "events.amazonaws.com"
+}
+
 data "aws_iam_policy_document" "lambda_policies" {
   statement {
     effect = "Allow"
@@ -55,19 +62,19 @@ data "aws_iam_policy_document" "lambda_policies" {
     resources = ["arn:aws:logs:*:*:*"]
   }
 
-  statement {
-    effect = "Allow"
+  # statement {
+  #   effect = "Allow"
 
-    actions = [
-      "sqs:ReceiveMessage",
-      "sqs:DeleteMessage",
-      "sqs:GetQueueAttributes",
-    ]
+  #   actions = [
+  #     "sqs:ReceiveMessage",
+  #     "sqs:DeleteMessage",
+  #     "sqs:GetQueueAttributes",
+  #   ]
 
-    resources = [
-      aws_sqs_queue.data_queue.arn
-    ]
-  }
+  #   resources = [
+  #     aws_sqs_queue.data_queue.arn
+  #   ]
+  # }
 }
 
 
